@@ -7,6 +7,8 @@ from sklearn.feature_extraction.text import HashingVectorizer
 
 np.random.seed(1337)
 
+# Use the hashing trick to make feature vectors of uniform length (n_features) regardless
+# of the number of features passed in the context (remaning features are set to zero)
 vectorizer = HashingVectorizer(n_features=100)
 contextual_bandit = bandit.epsilonGreedyContextualBandit()
 
@@ -20,7 +22,7 @@ ctrs = [0.4, 0.052, 0.0522, 0.0521]
 
 # Simulate a single context, a male website visitor aged 21 that uses Firefox
 context = vectorizer.fit_transform(['age_21 gender_male browser_firefox'])
-counts = np.zeros(len(arms))
+counts = np.zeros(len(arms)) # Keep count of how many times each arm was chosen
 
 epochs = 100000
 print('Running simulation for ' + str(epochs) + ' epochs')
