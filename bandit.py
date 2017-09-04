@@ -39,7 +39,7 @@ class epsilonGreedyContextualBandit(object):
                         tol=None
                     )
                 else:
-                    raise unknownModeException("Unknown mode (must be either 'regression' or 'classification' ")
+                    raise unknownModeException("Unknown mode (must be either 'regression' or 'classification')")
                 self.n_arms += 1
 
         if np.random.uniform() <= self.config['epsilon']:
