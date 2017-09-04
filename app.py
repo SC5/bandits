@@ -1,9 +1,8 @@
-import random
 import sys
 import numpy as np
 import bandit
 
-np.random.seed(0)
+np.random.seed(1337)
 
 from sklearn.feature_extraction.text import HashingVectorizer
 
@@ -33,7 +32,7 @@ context = vectorizer.fit_transform(['age_21 gender_male browser_firefox'])
 counts = np.zeros(len(arms)) # Keep count of how many times each arm was chosen
 rewards = np.zeros(len(arms)) # Keep count of the rewards for each arm
 
-epochs = 100
+epochs = 10000
 sys.stdout.write('Running simulation for ' + str(epochs) + ' epochs')
 for i in range(epochs):
     sys.stdout.write('.')
