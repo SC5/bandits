@@ -1,5 +1,4 @@
 # Imports
-import random
 import numpy as np
 
 from sklearn.exceptions import NotFittedError
@@ -43,8 +42,8 @@ class epsilonGreedyContextualBandit(object):
                     raise unknownModeException("Unknown mode (must be either 'regression' or 'classification' ")
                 self.n_arms += 1
 
-        if random.random() <= self.config['epsilon']:
-            return random.choice(list(self.arms.keys()))
+        if np.random.uniform() <= self.config['epsilon']:
+            return np.random.choice(list(self.arms.keys()))
         else:
             try:
                 predictions = []
@@ -58,7 +57,7 @@ class epsilonGreedyContextualBandit(object):
                     candidates.append(arm)
                 return candidates[np.argmax(predictions)]
             except NotFittedError:
-                return random.choice(list(self.arms.keys()))
+                return np.random.choice(list(self.arms.keys()))
 
     def reward(self, arm, context, reward):
         if self.config['mode'] is 'regression':
