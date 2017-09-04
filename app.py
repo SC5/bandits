@@ -12,14 +12,14 @@ vectorizer = HashingVectorizer(n_features=1024)
 contextual_bandit = bandit.epsilonGreedyContextualBandit(mode='classification', epsilon=0.1, penalty='l2')
 
 # Example with three advertisments we would like to show
-arms = ['advertisment_1', 
-        'advertisment_2', 
-        'advertisment_3', 
-        'advertisment_4', 
-        'advertisment_5', 
-        'advertisment_6', 
-        'advertisment_7', 
-        'advertisment_8']
+arms = ['advertisement_1', 
+        'advertisement_2', 
+        'advertisement_3', 
+        'advertisement_4', 
+        'advertisement_5', 
+        'advertisement_6', 
+        'advertisement_7', 
+        'advertisement_8']
 
 # The job of the bandit is to learn the true click-through rates
 # of each arm, but for simulation purposes, we'll cheat and pretend
