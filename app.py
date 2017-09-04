@@ -7,7 +7,7 @@ np.random.seed(1337)
 from sklearn.feature_extraction.text import HashingVectorizer
 
 # Use the hashing trick to make feature vectors of uniform length (n_features) regardless
-# of the number of features passed in the context (remaning features are set to zero)
+# of the number of features passed in the context (remaining features are set to zero)
 vectorizer = HashingVectorizer(n_features=1024)
 contextual_bandit = bandit.epsilonGreedyContextualBandit(mode='classification', epsilon=0.1, penalty='l2')
 
