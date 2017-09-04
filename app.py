@@ -9,7 +9,7 @@ from sklearn.feature_extraction.text import HashingVectorizer
 # Use the hashing trick to make feature vectors of uniform length (n_features) regardless
 # of the number of features passed in the context (remaning features are set to zero)
 vectorizer = HashingVectorizer(n_features=1024)
-contextual_bandit = bandit.epsilonGreedyContextualBandit(mode='classification', epsilon=0.2, penalty='l2')
+contextual_bandit = bandit.epsilonGreedyContextualBandit(mode='classification', epsilon=0.1, penalty='l2')
 
 # Example with three advertisments we would like to show
 arms = ['advertisment_1', 
