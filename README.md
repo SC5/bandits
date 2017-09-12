@@ -5,9 +5,9 @@ For regression problems, where the reward is not binary but a real number, chang
 
 
 ## Requirements
-The bandit requires `scikit` and `numpy`. To install both:
+The bandit requires `scikit`, `scipy` and `numpy`. To install them all:
 
-     pip install -U scikit-learn numpy
+     pip install -U scikit-learn scipy numpy
 
 ## Running the simulation
 
