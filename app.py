@@ -11,7 +11,7 @@ from sklearn.feature_extraction.text import HashingVectorizer
 vectorizer = HashingVectorizer(n_features=1024)
 contextual_bandit = bandit.epsilonGreedyContextualBandit(epsilon=0.1, penalty='l2')
 
-# Example with three advertisments we would like to show
+# Example with advertisments we would like to show
 arms = ['advertisement_1', 
         'advertisement_2', 
         'advertisement_3', 
