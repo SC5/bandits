@@ -4,9 +4,6 @@ import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import SGDRegressor, SGDClassifier
 
-class unknownModeException(Exception):
-    pass
-
 class epsilonGreedyContextualBandit(object):
 
     def __init__(self, epsilon=0.2, fit_intercept=True, penalty='l2'):
