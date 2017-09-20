@@ -27,7 +27,7 @@ arms = ['advertisement_1',
 ctrs = [0.076, 0.0521, 0.0122, 0.05215, 0.074, 0.0521, 0.07482, 0.0154]
 
 # Simulate a single context, a male website visitor aged 21 that uses Firefox
-context = vectorizer.fit_transform(['age_21 gender_male browser_firefox'])
+context = 'age_21 gender_male browser_firefox'
 
 counts = np.zeros(len(arms)) # Keep count of how many times each arm was chosen
 costs = np.zeros(len(arms)) # Keep count of the costs for each arm

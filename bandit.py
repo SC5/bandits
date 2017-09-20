@@ -3,6 +3,8 @@ import numpy as np
 
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import SGDRegressor, SGDClassifier
+from sklearn.feature_extraction.text import HashingVectorizer
+
 
 class epsilonGreedyContextualBandit(object):
 
@@ -14,8 +16,10 @@ class epsilonGreedyContextualBandit(object):
         }
         self.arms = {}
         self.n_arms = 0
+        self.vectorizer = HashingVectorizer(n_features=1024)
 
     def select_arm(self, context, arms):
+        context = self.vectorizer.fit_transform([context])
         for arm in arms:
             if arm not in self.arms:
                 self.arms[arm] = SGDRegressor(
@@ -41,4 +45,5 @@ class epsilonGreedyContextualBandit(object):
                 return np.random.choice(list(self.arms.keys()))
 
     def reward(self, arm, context, cost):
+        context = self.vectorizer.fit_transform([context])
         self.arms[arm].partial_fit(context, [cost])
