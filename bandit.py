@@ -18,9 +18,9 @@ class epsilonGreedyContextualBandit(object):
         self.n_arms = 0
         self.vectorizer = HashingVectorizer(n_features=1024)
 
-    def select_arm(self, context, arms):
+    def select_arm(self, context, choices):
         context = self.vectorizer.fit_transform([context])
-        for arm in arms:
+        for arm in choices:
             if arm not in self.arms:
                 self.arms[arm] = SGDRegressor(
                     fit_intercept=self.config['fit_intercept'],
@@ -31,7 +31,7 @@ class epsilonGreedyContextualBandit(object):
                 self.n_arms += 1
 
         if np.random.uniform() <= self.config['epsilon']:
-            return np.random.choice(list(self.arms.keys()))
+            return np.random.choice(choices)
         else:
             try:
                 predictions = []
@@ -42,7 +42,7 @@ class epsilonGreedyContextualBandit(object):
                     candidates.append(arm)
                 return candidates[np.argmin(predictions)]
             except NotFittedError:
-                return np.random.choice(list(self.arms.keys()))
+                return np.random.choice(choices)
 
     def reward(self, arm, context, cost):
         context = self.vectorizer.fit_transform([context])
