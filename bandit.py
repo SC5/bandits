@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import HashingVectorizer
 
 class epsilonGreedyContextualBandit(object):
 
-    def __init__(self, epsilon=0.2, fit_intercept=True, penalty='l2'):
+    def __init__(self, epsilon=0.2, fit_intercept=True, penalty='l2', n_features=1048576):
         self.config = {
             'epsilon': epsilon,
             'fit_intercept': fit_intercept,
@@ -16,7 +16,7 @@ class epsilonGreedyContextualBandit(object):
         }
         self.arms = {}
         self.n_arms = 0
-        self.vectorizer = HashingVectorizer(n_features=1024)
+        self.vectorizer = HashingVectorizer(n_features)
 
     def select_arm(self, context, choices):
         context = self.vectorizer.fit_transform([context])
