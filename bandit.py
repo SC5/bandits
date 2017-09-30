@@ -2,13 +2,13 @@
 import numpy as np
 
 from sklearn.exceptions import NotFittedError
-from sklearn.linear_model import SGDRegressor, SGDClassifier
+from sklearn.linear_model import SGDRegressor
 from sklearn.feature_extraction.text import HashingVectorizer
 
 
 class epsilonGreedyContextualBandit(object):
 
-    def __init__(self, epsilon=0.2, fit_intercept=True, penalty='l2', n_features=1048576):
+    def __init__(self, epsilon=0.2, fit_intercept=True, penalty='l2', n_features=2**20):
         self.config = {
             'epsilon': epsilon,
             'fit_intercept': fit_intercept,
