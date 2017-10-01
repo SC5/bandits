@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bandit Demo</title>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css?family=Lora|Raleway" rel="stylesheet">
+  <style type="text/css">
+  * {
+    padding: 0;
+    margin: 0;
+  }
+  body {
+    background-color: #fff;
+    box-sizing: border-box;
+    color: #656565;
+    font-family: 'Lora', serif;
+    font-size: 14px;
+  }
+  button {
+    border: 0;
+    border-radius: 5px;
+    color: #FFFFFF;
+    font-family: 'Lora';
+    font-size: 12px;
+    margin: 4px;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    cursor: pointer;
+
+  }
+  p {
+    margin-top: 10px;
+  }
+  #button-yes {
+    background-color: #4eab55;
+  }
+  #button-no {
+    background-color: #e02430;
+  }
+  header {
+    padding: 2em;
+  }
+  header, h2 {
+    text-align: center;
+  }
+  footer {
+    clear: both;
+    text-align: center;
+    font-style: italic;
+  }
+  img, h1 {
+    display: inline;
+    vertical-align: middle;
+  }
+  img {
+    height: 24px;
+    padding-right: 6px;
+  }
+  h2 {
+    font-size: 20px;
+  }
+  #description {
+    text-align: center;
+    margin: auto;
+    padding-bottom: 40px;
+    width: 60%;
+    font-size:11px;
+  }
+  #service {
+    margin: auto;
+    min-height: 50px;
+    max-width: 800px;
+  }
+  #context-container {
+    float: left;
+    width: 50%;
+  }
+  #decision-container {
+    float: left;
+    width: 50%;
+  }
+  .context, .decision {
+    margin: 1em;
+    padding: 1em;
+    border-radius: 10px;
+    border: 2px solid #f7f7f7;
+  }
+  #feedback {
+    text-align: center;
+  }
+</style>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+  var users = [
+  'Mary, Firefox, Helsinki, 31',
+  'John, Chrome, Helsinki, 22'
+  ];
+  var arms = [
+  'Senate Budget Opens the Door to $1.5 Trillion in Tax Cuts', 'Amazon quietly announces Fire OS 6, based on Android Nougat 7.1.2; the OS will premiere on the 4K Fire TV'
+  ];
+  var user_index = 0;
+  function getDecision(idx) {
+    $.post(
+      "/predict",
+      JSON.stringify({
+        context: users[idx],
+        arms: arms
+      }))
+    .done(function( data ) {
+      $('.context').text(users[idx])
+      $('.decision').text(data.arm)
+      if(idx == 0)
+        user_index = 1;
+      else
+        user_index = 0;
+    });
+
+  }
+  function sendReward(cost) {
+    var arm = $('.decision').text()
+    var context = $('.context').text()
+    console.log('reward', arm, context, cost)
+    $.post(
+      "/reward",
+      JSON.stringify({
+        context: context,
+        arm: arm,
+        cost: cost
+      }))
+    .done(function( data ) {
+      getDecision(user_index)
+    });
+  }
+</script>
+</head>
+
+<body onload="getDecision(0)">
+  <header>
+    <img src="/sc5logo.png" />
+    <h1>AI Decision Service Demo</h1>
+  </header>
+  <div id="description">
+    <p>
+      This is a simple demo of <em>reinforcement learning</em> for news recommendation. The AI decides which news headline to show based on information about the website visitor. The user then gives feedback about the relevancy of the item. After a while, the AI will learn to suggest the most relevant item to each user. From time to time, it suggests something different, in order to learn more.
+    </p>
+    <p>
+      The underlying technology isn't just for news: you can it use to personalise UI items and placements, optimise pricing, automatically assign customer support tickets to people, and much more.
+    </p>
+  </div>
+  <div id="service">
+    <div id="context-container">
+      <h2>User information</h2>
+      <div class="context"></div>
+    </div>
+    <div id="decision-container">
+      <h2>Suggested headline</h2>
+      <div class="decision"></div>
+      <div id="feedback">
+        <button id="button-yes" onclick="sendReward(-1)">Interesting</button>
+        <button id="button-no" onclick="sendReward(1)">Not interesting</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
