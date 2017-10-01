@@ -1,4 +1,3 @@
-# Imports
 import numpy as np
 
 from sklearn.exceptions import NotFittedError
