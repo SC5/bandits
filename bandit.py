@@ -15,7 +15,8 @@ class epsilonGreedyContextualBandit(object):
         }
         self.arms = {}
         self.n_arms = 0
-        self.vectorizer = HashingVectorizer(n_features)
+        self.n_features = n_features
+        self.vectorizer = HashingVectorizer(self.n_features)
 
     def select_arm(self, context, choices):
         context = self.vectorizer.fit_transform([context])
@@ -46,3 +47,11 @@ class epsilonGreedyContextualBandit(object):
     def reward(self, arm, context, cost):
         context = self.vectorizer.fit_transform([context])
         self.arms[arm].partial_fit(context, [cost])
+
+    def reset(self):
+        self.__init__(
+            epsilon=self.config['epsilon'],
+            fit_intercept=self.config['fit_intercept'],
+            penalty=self.config['penalty'],
+            n_features=self.n_features
+        )

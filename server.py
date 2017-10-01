@@ -27,5 +27,10 @@ async def reward(request):
     contextual_bandit.reward(arm, context, cost)
     return json({"cost": cost})
 
+@app.route("/reset", methods=["POST"])
+async def reset(request):
+    contextual_bandit.reset()
+    return json({"reset": "ok"})
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
