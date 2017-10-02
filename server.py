@@ -5,31 +5,34 @@ from sanic import Sanic
 from sanic.response import json
 
 app = Sanic()
-contextual_bandit = bandit.epsilonGreedyContextualBandit(epsilon=0.1, penalty='l2')
+bandits = {}
+bandits['default'] = bandit.epsilonGreedyContextualBandit()
 
 app.static('/', './static')
 logger = logging.getLogger('sanic')
 
-@app.route("/predict", methods=["POST"])
-async def predict(request):
+@app.route("/predict/<id>", methods=["POST"])
+async def predict(request, id):
+    if id not in bandits:
+        bandits[id] = bandit.epsilonGreedyContextualBandit()
     body = request.json
     context = body['context']
     arms = body['arms']
-    arm = contextual_bandit.select_arm(context, arms)
+    arm = bandits[id].select_arm(context, arms)
     return json({"arm": arm})
 
-@app.route("/reward", methods=["POST"])
-async def reward(request):
+@app.route("/reward/<id>", methods=["POST"])
+async def reward(request, id):
     body = request.json
     context = body['context']
     arm = body['arm']
     cost = body['cost']
-    contextual_bandit.reward(arm, context, cost)
+    bandits[id].reward(arm, context, cost)
     return json({"cost": cost})
 
-@app.route("/reset", methods=["POST"])
-async def reset(request):
-    contextual_bandit.reset()
+@app.route("/reset/<id>", methods=["POST"])
+async def reset(request, id):
+    bandits[id].reset()
     return json({"reset": "ok"})
 
 if __name__ == "__main__":

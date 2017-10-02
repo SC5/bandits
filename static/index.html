@@ -101,7 +101,7 @@
   var user_index = 0;
   function getDecision(idx) {
     $.post(
-      "/predict",
+      "/predict/default",
       JSON.stringify({
         context: users[idx],
         arms: arms
@@ -121,7 +121,7 @@
     var context = $('.context').text()
     console.log('reward', arm, context, cost)
     $.post(
-      "/reward",
+      "/reward/default",
       JSON.stringify({
         context: context,
         arm: arm,
