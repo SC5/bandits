@@ -1,6 +1,7 @@
 import bandit
 import logging
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sanic import Sanic
 from sanic.response import json
 
@@ -10,6 +11,16 @@ bandits['default'] = bandit.epsilonGreedyContextualBandit()
 
 app.static('/', './static')
 logger = logging.getLogger('sanic')
+
+# async def tick():
+#     logger.info('Tick! The time is: %s' % datetime.now())
+#     time.sleep(1)
+
+# @app.listener('before_server_start')
+# async def instantiate_scheduler(app, loop):
+#     scheduler = AsyncIOScheduler({'event_loop': loop})
+#     scheduler.add_job(tick, 'interval', seconds=1)
+#     scheduler.start()
 
 @app.route("/predict/<id>", methods=["POST"])
 async def predict(request, id):
