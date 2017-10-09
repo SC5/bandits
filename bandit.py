@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import HashingVectorizer
 
 class epsilonGreedyContextualBandit(object):
 
-    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', alpha=0.1, n_features=128):
+    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', alpha=0.1, n_features=32):
         self.config = {
             'epsilon': epsilon,
             'fit_intercept': fit_intercept,
@@ -55,5 +55,6 @@ class epsilonGreedyContextualBandit(object):
             epsilon=self.config['epsilon'],
             fit_intercept=self.config['fit_intercept'],
             penalty=self.config['penalty'],
+            alpha=self.config['alpha'],
             n_features=self.n_features
         )
