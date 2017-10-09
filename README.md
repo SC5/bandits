@@ -9,3 +9,16 @@ The bandit requires `scikit`, `scipy` and `numpy`. To install them all:
 ## Running the simulation
 
     python3 app.py
+
+## Running the demo application
+
+_Note: the demo requires Docker to be installed on your machine_
+
+### Build the Docker image
+
+From the root directory of the repository:
+
+    docker build -t bandit-demo .
+    docker run -p 8000:8000 -v $(pwd)/static:/bandit/static bandit-demo
+
+The demo can be run by visiting `http://0.0.0.0:8000/index.html` in any browser. If you want to make changed to the demo, edit `static/index.html` and reload.

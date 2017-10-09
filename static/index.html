@@ -8,13 +8,19 @@
   * {
     padding: 0;
     margin: 0;
+    box-sizing: border-box;
+  }
+  html {
+    height: 100%;
   }
   body {
     background-color: #fff;
-    box-sizing: border-box;
     color: #656565;
     font-family: 'Lora', serif;
     font-size: 14px;
+    height: 100%;
+    display:flex;
+    flex-wrap: wrap;
   }
   button {
     border: 0;
@@ -22,10 +28,12 @@
     color: #FFFFFF;
     font-family: 'Lora';
     font-size: 12px;
-    margin: 4px;
+    margin: 10px;
     padding: 10px 20px;
     text-transform: uppercase;
     cursor: pointer;
+  }
+  #container {
 
   }
   p {
@@ -38,7 +46,8 @@
     background-color: #e02430;
   }
   header {
-    padding: 2em;
+    flex: 0 0 100%;
+    height: 10%;
   }
   header, h2 {
     text-align: center;
@@ -58,29 +67,26 @@
   }
   h2 {
     font-size: 20px;
+    padding-bottom: 5px;
   }
   #description {
     text-align: center;
-    margin: auto;
-    padding-bottom: 40px;
-    width: 60%;
-    font-size:11px;
+    height: 10%;
+    flex: 0 0 100%;
+    padding: 0 10%;
   }
-  #service {
-    margin: auto;
-    min-height: 50px;
-    max-width: 800px;
+  #context-container, #decision-container {
+    flex: 0 0 50%;
+    height: 20%;
   }
-  #context-container {
-    float: left;
-    width: 50%;
+  #chart-container {
+    flex: 0 0 100%;
+    height: 60%;
   }
-  #decision-container {
-    float: left;
-    width: 50%;
+  .padding-large {
+    padding: 30px;
   }
   .context, .decision {
-    margin: 1em;
     padding: 1em;
     border-radius: 10px;
     border: 2px solid #f7f7f7;
@@ -88,38 +94,60 @@
   #feedback {
     text-align: center;
   }
+  #reset {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+  }
 </style>
-<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
 <script type="text/javascript">
+
   var users = [
-  'Mary, Firefox, Helsinki, 31',
-  'John, Chrome, Helsinki, 22'
+    {
+      context: 'Mary, Firefox, Helsinki, 31',
+      history: [0,0]
+    },
+    {
+      context: 'John, Chrome, Helsinki, 22',
+      history: [0,0]
+    }
   ];
   var arms = [
-  'Senate Budget Opens the Door to $1.5 Trillion in Tax Cuts', 'Amazon quietly announces Fire OS 6, based on Android Nougat 7.1.2; the OS will premiere on the 4K Fire TV'
+    'Senate Budget Opens the Door to $1.5 Trillion in Tax Cuts',
+    'Amazon quietly announces Fire OS 6, based on Android Nougat 7.1.2; the OS will premiere on the 4K Fire TV'
   ];
-  var user_index = 0;
-  function getDecision(idx) {
+  var idx = 0;
+  var chart = null;
+
+  function getDecision(ix) {
     $.post(
       "/predict/default",
       JSON.stringify({
-        context: users[idx],
+        context: users[ix].context,
         arms: arms
       }))
     .done(function( data ) {
-      $('.context').text(users[idx])
-      $('.decision').text(data.arm)
-      if(idx == 0)
-        user_index = 1;
-      else
-        user_index = 0;
+      console.log('decision', data);
+      $('.context').text(users[ix].context);
+      $('.decision').text(data.arm);
+      users[ix].history[arms.indexOf(data.arm)] += 1;
+      addData(chart, 1);
+      if(idx == arms.length - 1) {
+        idx = 0;
+      }
+      else {
+        idx += 1;
+      }
+      console.log('user', users[ix]);
     });
-
   }
+
   function sendReward(cost) {
-    var arm = $('.decision').text()
-    var context = $('.context').text()
-    console.log('reward', arm, context, cost)
+    var arm = $('.decision').text();
+    var context = $('.context').text();
+    console.log('reward', {arm, context, cost});
     $.post(
       "/reward/default",
       JSON.stringify({
@@ -128,31 +156,106 @@
         cost: cost
       }))
     .done(function( data ) {
-      getDecision(user_index)
+      getDecision(idx);
     });
   }
+
+  function reset() {
+    $.post(
+      "/reset/default",
+      JSON.stringify({}))
+    .done(function( data ) {
+      console.log('reset');
+      window.location.reload();
+    });   
+  }
+
+  function initChart() {
+    var ctx = document.getElementById("chart").getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ["Mary", "John"],
+            datasets: [
+              {
+                  id: 0,
+                  label: 'Decisions (Politics)',
+                  data: [],
+                  backgroundColor: [
+                      'rgba(255, 99, 132, 0.2)',
+                      'rgba(255, 99, 132, 0.2)'
+                  ],
+                  borderColor: [
+                      'rgba(255,99,132,1)',
+                      'rgba(255,99,132,1)'
+                  ],
+                  borderWidth: 1
+              },
+              {
+                  id: 1,
+                  label: 'Decisions (Tech)',
+                  data: [],
+                  backgroundColor: [
+                      'rgba(80, 99, 132, 0.2)',
+                      'rgba(80, 99, 132, 0.2)'
+                  ],
+                  borderColor: [
+                      'rgba(80,99,132,1)',
+                      'rgba(80,99,132,1)'
+                  ],
+                  borderWidth: 1
+              }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero:true
+                    }
+                }]
+            }
+        }
+    });
+    chart = myChart;
+  }
+
+  function addData(chart, data) {
+    chart.data.datasets.forEach((dataset) => {
+        data = [];
+        console.log(dataset.id);
+        for(v of users) {
+          data = data.concat(v.history[dataset.id]);
+        }
+        dataset.data = data;
+    });
+    chart.update();
+  }
+
+
 </script>
 </head>
 
-<body onload="getDecision(0)">
-  <header>
+<body onload="initChart();getDecision(0)">
+  <header class="padding-large">
     <img src="/sc5logo.png" />
     <h1>AI Decision Service Demo</h1>
-  </header>
-  <div id="description">
-    <p>
-      This is a simple demo of <em>reinforcement learning</em> for news recommendation. The AI decides which news headline to show based on information about the website visitor. The user then gives feedback about the relevancy of the item. After a while, the AI will learn to suggest the most relevant item to each user. From time to time, it suggests something different, in order to learn more.
-    </p>
-    <p>
-      The underlying technology isn't just for news: you can it use to personalise UI items and placements, optimise pricing, automatically assign customer support tickets to people, and much more.
-    </p>
-  </div>
-  <div id="service">
-    <div id="context-container">
+  </header class="padding-large">
+    <div id="description" class="padding-large">
+      <p>
+        This is a demo of <em>reinforcement learning</em> for news recommendation. Based on feedback, the AI will learn to suggest the most relevant item to each user. Occasionally, it suggests something new, in order to learn more.
+      </p>
+      <p>
+        The underlying technology isn't just for news: you can it use to personalise UI items and placements, optimise pricing, automatically assign customer support tickets to people, and much more.
+      </p>
+    </div>
+    <div id="context-container" class="padding-large">
       <h2>User information</h2>
       <div class="context"></div>
     </div>
-    <div id="decision-container">
+    <div id="decision-container" class="padding-large">
       <h2>Suggested headline</h2>
       <div class="decision"></div>
       <div id="feedback">
@@ -160,6 +263,9 @@
         <button id="button-no" onclick="sendReward(1)">Not interesting</button>
       </div>
     </div>
-  </div>
+    <div id="chart-container" class="padding-large">
+      <canvas id="chart" width="100%" height="50%"></canvas>  
+    </div>   
+  <button id="reset" onclick="reset()">Reset</button> 
 </body>
 </html>
