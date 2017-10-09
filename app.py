@@ -32,7 +32,7 @@ sys.stdout.write('Running simulation for ' + str(epochs) + ' epochs')
 for i in range(epochs):
     sys.stdout.write('.')
     sys.stdout.flush()
-    chosen_arm, phase = contextual_bandit.select_arm(context, arms)
+    chosen_arm, phase, predictions = contextual_bandit.select_arm(context, arms)
     # Send cost based on our pretend CTR for the chosen arm:
     # - -1: clicked
     # - 1: not clicked
