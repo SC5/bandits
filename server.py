@@ -7,7 +7,7 @@ from sanic.response import json
 
 app = Sanic()
 bandits = {}
-bandits['default'] = bandit.epsilonGreedyContextualBandit(alpha=0.5)
+bandits['default'] = bandit.epsilonGreedyContextualBandit(alpha=0.1, penalty='l1', epsilon=0.2)
 
 app.static('/', './static')
 logger = logging.getLogger('sanic')
@@ -29,8 +29,8 @@ async def predict(request, id):
     body = request.json
     context = body['context']
     arms = body['arms']
-    arm, phase = bandits[id].select_arm(context, arms)
-    return json({"arm": arm, "phase": phase})
+    arm, phase, predictions= bandits[id].select_arm(context, arms)
+    return json({"arm": arm, "phase": phase, "predictions": predictions})
 
 @app.route("/reward/<id>", methods=["POST"])
 async def reward(request, id):

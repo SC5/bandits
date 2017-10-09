@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import HashingVectorizer
 
 class epsilonGreedyContextualBandit(object):
 
-    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', alpha=0.1, n_features=2**20):
+    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', alpha=0.1, n_features=128):
         self.config = {
             'epsilon': epsilon,
             'fit_intercept': fit_intercept,
@@ -33,7 +33,7 @@ class epsilonGreedyContextualBandit(object):
                 self.n_arms += 1
 
         if np.random.uniform() <= self.config['epsilon']:
-            return (np.random.choice(choices), 'explore')
+            return (np.random.choice(choices), 'explore', [])
         else:
             try:
                 predictions = []
@@ -42,9 +42,9 @@ class epsilonGreedyContextualBandit(object):
                 for arm in arms:
                     predictions.append(self.arms[arm].predict(context))
                     candidates.append(arm)
-                return (candidates[np.argmin(predictions)], 'exploit')
+                return (candidates[np.argmin(predictions)], 'exploit', predictions)
             except NotFittedError:
-                return (np.random.choice(choices), 'explore')
+                return (np.random.choice(choices), 'explore', [])
 
     def reward(self, arm, context, cost):
         context = self.vectorizer.fit_transform([context])
