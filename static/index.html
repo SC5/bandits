@@ -142,6 +142,7 @@
       }))
     .done(function( data ) {
       console.log('decision', data);
+      console.log('predictions', data.predictions);
       if(data.phase == 'explore') {
         $('#headline').text('Suggested headline (explore)')
       }
