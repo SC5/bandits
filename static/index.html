@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Bandit Demo</title>
+  <title>Decision Service Demo</title>
   <meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/css?family=Lora|Raleway" rel="stylesheet">
   <style type="text/css">
@@ -73,7 +73,7 @@
     text-align: center;
     height: 10%;
     flex: 0 0 100%;
-    padding: 0 10%;
+    padding: 0 20%;
   }
   #context-container, #decision-container {
     flex: 0 0 50%;
@@ -84,7 +84,7 @@
     height: 60%;
   }
   .padding-large {
-    padding: 30px;
+    padding: 30px 40px;
   }
   .context, .decision {
     padding: 1em;
@@ -105,18 +105,28 @@
 <script type="text/javascript">
 
   var users = [
-    {
-      context: 'Mary, Firefox, Helsinki, 31',
-      history: [0,0]
-    },
-    {
-      context: 'John, Chrome, Helsinki, 22',
-      history: [0,0]
-    }
+  {
+    context: 'Mary, Firefox, Helsinki, 31',
+    history: [0,0]
+  },
+  {
+    context: 'John, Chrome, Helsinki, 22',
+    history: [0,0]
+  },
+  {
+    context: 'Max, Chrome, Helsinki, 22',
+    history: [0,0]
+  }
   ];
   var arms = [
-    'Senate Budget Opens the Door to $1.5 Trillion in Tax Cuts',
-    'Amazon quietly announces Fire OS 6, based on Android Nougat 7.1.2; the OS will premiere on the 4K Fire TV'
+  {
+    id: 'Politics',
+    text: 'Senate Budget Opens the Door to $1.5 Trillion in Tax Cuts'
+  },
+  {
+    id: 'Tech',
+    text: 'Amazon quietly announces Fire OS 6, based on Android Nougat 7.1.2; the OS will premiere on the 4K Fire TV'
+  }
   ];
   var idx = 0;
   var chart = null;
@@ -126,26 +136,37 @@
       "/predict/default",
       JSON.stringify({
         context: users[ix].context,
-        arms: arms
+        arms: arms.map(function (item) {
+          return item.id;
+        })
       }))
     .done(function( data ) {
       console.log('decision', data);
+      if(data.phase == 'explore') {
+        $('#headline').text('Suggested headline (explore)')
+      }
+      else {
+        $('#headline').text('Suggested headline (exploit)')
+      }
       $('.context').text(users[ix].context);
-      $('.decision').text(data.arm);
-      users[ix].history[arms.indexOf(data.arm)] += 1;
-      addData(chart, 1);
-      if(idx == arms.length - 1) {
+      $('.decision').text(arms[arms.findIndex(function (i) {return i.id == data.arm})].text);
+      users[ix].history[arms.findIndex(function (i) { return i.id == data.arm})] += 1;
+      addData(chart);
+      if(idx == users.length - 1) {
+        console.log('foo', idx)
         idx = 0;
       }
       else {
         idx += 1;
       }
+      console.log('index', idx)
       console.log('user', users[ix]);
     });
   }
 
   function sendReward(cost) {
-    var arm = $('.decision').text();
+    var decisionText = $('.decision').text();
+    var arm = arms[arms.findIndex(function (i) {return i.text == decisionText})].id;
     var context = $('.context').text();
     console.log('reward', {arm, context, cost});
     $.post(
@@ -171,65 +192,74 @@
   }
 
   function initChart() {
+    Chart.defaults.global.defaultFontFamily = "Lora";
     var ctx = document.getElementById("chart").getContext('2d');
     var myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ["Mary", "John"],
-            datasets: [
-              {
-                  id: 0,
-                  label: 'Decisions (Politics)',
-                  data: [],
-                  backgroundColor: [
-                      'rgba(255, 99, 132, 0.2)',
-                      'rgba(255, 99, 132, 0.2)'
-                  ],
-                  borderColor: [
-                      'rgba(255,99,132,1)',
-                      'rgba(255,99,132,1)'
-                  ],
-                  borderWidth: 1
-              },
-              {
-                  id: 1,
-                  label: 'Decisions (Tech)',
-                  data: [],
-                  backgroundColor: [
-                      'rgba(80, 99, 132, 0.2)',
-                      'rgba(80, 99, 132, 0.2)'
-                  ],
-                  borderColor: [
-                      'rgba(80,99,132,1)',
-                      'rgba(80,99,132,1)'
-                  ],
-                  borderWidth: 1
-              }
-            ]
+      type: 'bar',
+      data: {
+        labels: ["Mary", "John", "Max"],
+        datasets: [
+        {
+          id: 0,
+          label: 'Decisions (Politics)',
+          data: [],
+          backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(255, 99, 132, 0.2)'
+          ],
+          borderColor: [
+          'rgba(255,99,132,1)',
+          'rgba(255,99,132,1)',
+          'rgba(255,99,132,1)'
+          ],
+          borderWidth: 1
         },
-        options: {
-            maintainAspectRatio: false,
-            responsive: true,
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero:true
-                    }
-                }]
-            }
+        {
+          id: 1,
+          label: 'Decisions (Tech)',
+          data: [],
+          backgroundColor: [
+          'rgba(80, 99, 132, 0.2)',
+          'rgba(80, 99, 132, 0.2)',
+          'rgba(80, 99, 132, 0.2)'
+          ],
+          borderColor: [
+          'rgba(80,99,132,1)',
+          'rgba(80,99,132,1)',
+          'rgba(80,99,132,1)'
+          ],
+          borderWidth: 1
         }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }],
+          xAxes: [{
+            ticks: {
+              stepSize: 1
+            }
+          }],
+        }
+      }
     });
     chart = myChart;
   }
 
-  function addData(chart, data) {
+  function addData(chart) {
     chart.data.datasets.forEach((dataset) => {
-        data = [];
-        console.log(dataset.id);
-        for(v of users) {
-          data = data.concat(v.history[dataset.id]);
-        }
-        dataset.data = data;
+      data = [];
+      for(v of users) {
+        data = data.concat(v.history[dataset.id]);
+      }
+      dataset.data = data;
     });
     chart.update();
   }
@@ -247,16 +277,13 @@
       <p>
         This is a demo of <em>reinforcement learning</em> for news recommendation. Based on feedback, the AI will learn to suggest the most relevant item to each user. Occasionally, it suggests something new, in order to learn more.
       </p>
-      <p>
-        The underlying technology isn't just for news: you can it use to personalise UI items and placements, optimise pricing, automatically assign customer support tickets to people, and much more.
-      </p>
     </div>
     <div id="context-container" class="padding-large">
       <h2>User information</h2>
       <div class="context"></div>
     </div>
     <div id="decision-container" class="padding-large">
-      <h2>Suggested headline</h2>
+      <h2 id="headline">Suggested headline</h2>
       <div class="decision"></div>
       <div id="feedback">
         <button id="button-yes" onclick="sendReward(-1)">Interesting</button>
