@@ -17,7 +17,8 @@ RUN yum install -y gcc \
 RUN pip3.5 install numpy \
   scipy \
   scikit-learn \
-  sanic
+  sanic \
+  apscheduler
 
 ADD . /bandit
 WORKDIR /bandit
