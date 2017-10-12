@@ -9,7 +9,9 @@ app = Sanic()
 bandits = {}
 bandits['default'] = bandit.epsilonGreedyContextualBandit(alpha=0.1, penalty='l1', epsilon=0.2)
 
+app.static('', './static/index.html')
 app.static('/', './static')
+
 logger = logging.getLogger('sanic')
 
 # async def tick():
