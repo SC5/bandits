@@ -1,0 +1,126 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  background-color: #fff;
+  color: #656565;
+  font-family: 'Lora', serif;
+  font-size: 14px;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+button {
+  border-radius: 5px;
+  color: #FFFFFF;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 12px;
+  margin: 10px;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#button-yes {
+  background-color: rgba(111, 189, 117, 0.7);
+  border: 1px solid #4eab55;
+}
+
+#button-no {
+  background-color: rgba(224, 36, 48, 0.7);
+  border: 1px solid #e02430;
+}
+
+#container {
+
+}
+
+header {
+  flex: 0 0 100%;
+  text-align: center;
+  padding-bottom: 0;
+}
+
+header img {
+  height: 4rem;
+}
+
+footer {
+  clear: both;
+  text-align: center;
+  font-style: italic;
+}
+
+h1, h2 {
+  font-family: 'Quicksand', sans-serif;
+  text-transform: uppercase;
+}
+
+h2 {
+  text-align: center;
+  font-size: 20px;
+  padding-bottom: 5px;
+}
+
+p {
+  margin-top: 10px;
+}
+
+.padding-large {
+  padding: 30px 40px;
+}
+
+.padding-clear-bottom {
+  padding-bottom: 0;
+}
+
+.padding-keep-sides {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+#description {
+  text-align: center;
+  flex: 0 0 70%;
+  margin: 1rem auto;
+}
+
+#context-container, #decision-container {
+  flex: 0 0 50%;
+}
+
+.context, .decision {
+  padding: 1em;
+  border-radius: 10px;
+  border: 2px solid #f7f7f7;
+  min-height: 4.5rem;
+  text-align: center;
+  transition: border 0.5s ease-in;
+}
+
+#chart-container {
+  flex: 0 0 100%;
+  height: 60%;
+}
+
+#feedback {
+  text-align: center;
+}
+
+#reset {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+}
+
+.impact {
+  border: 2px solid #3D5774;
+}

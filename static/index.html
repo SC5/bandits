@@ -3,103 +3,9 @@
 <head>
   <title>Decision Service Demo</title>
   <meta charset="UTF-8">
-  <link href="https://fonts.googleapis.com/css?family=Lora|Raleway" rel="stylesheet">
-  <style type="text/css">
-  * {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-  }
-  html {
-    height: 100%;
-  }
-  body {
-    background-color: #fff;
-    color: #656565;
-    font-family: 'Lora', serif;
-    font-size: 14px;
-    height: 100%;
-    display:flex;
-    flex-wrap: wrap;
-  }
-  button {
-    border: 0;
-    border-radius: 5px;
-    color: #FFFFFF;
-    font-family: 'Lora';
-    font-size: 12px;
-    margin: 10px;
-    padding: 10px 20px;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-  #container {
-
-  }
-  p {
-    margin-top: 10px;
-  }
-  #button-yes {
-    background-color: #4eab55;
-  }
-  #button-no {
-    background-color: #e02430;
-  }
-  header {
-    flex: 0 0 100%;
-    height: 10%;
-  }
-  header, h2 {
-    text-align: center;
-  }
-  footer {
-    clear: both;
-    text-align: center;
-    font-style: italic;
-  }
-  img, h1 {
-    display: inline;
-    vertical-align: middle;
-  }
-  img {
-    height: 24px;
-    padding-right: 6px;
-  }
-  h2 {
-    font-size: 20px;
-    padding-bottom: 5px;
-  }
-  #description {
-    text-align: center;
-    height: 10%;
-    flex: 0 0 100%;
-    padding: 0 20%;
-  }
-  #context-container, #decision-container {
-    flex: 0 0 50%;
-    height: 20%;
-  }
-  #chart-container {
-    flex: 0 0 100%;
-    height: 60%;
-  }
-  .padding-large {
-    padding: 30px 40px;
-  }
-  .context, .decision {
-    padding: 1em;
-    border-radius: 10px;
-    border: 2px solid #f7f7f7;
-  }
-  #feedback {
-    text-align: center;
-  }
-  #reset {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-  }
-</style>
+  <link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Quicksand:700" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js"></script>
 <script type="text/javascript">
@@ -162,6 +68,12 @@
       }
       console.log('index', idx)
       console.log('user', users[ix]);
+
+      $('.context').addClass('impact');
+      setTimeout(function() {
+        $('.context').removeClass('impact');
+      }, 1000);
+
     });
   }
 
@@ -189,7 +101,7 @@
     .done(function( data ) {
       console.log('reset');
       window.location.reload();
-    });   
+    });
   }
 
   function initChart() {
@@ -205,14 +117,14 @@
           label: 'Decisions (Politics)',
           data: [],
           backgroundColor: [
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(255, 99, 132, 0.2)'
+          'rgba(255, 171, 25, 0.2)',
+          'rgba(255, 171, 25, 0.2)',
+          'rgba(255, 171, 25, 0.2)'
           ],
           borderColor: [
-          'rgba(255,99,132,1)',
-          'rgba(255,99,132,1)',
-          'rgba(255,99,132,1)'
+          'rgba(255, 171, 25, 1)',
+          'rgba(255, 171, 25, 1)',
+          'rgba(255, 171, 25, 1)'
           ],
           borderWidth: 1
         },
@@ -221,14 +133,14 @@
           label: 'Decisions (Tech)',
           data: [],
           backgroundColor: [
-          'rgba(80, 99, 132, 0.2)',
-          'rgba(80, 99, 132, 0.2)',
-          'rgba(80, 99, 132, 0.2)'
+          'rgba(61, 87, 116, 0.2)',
+          'rgba(61, 87, 116, 0.2)',
+          'rgba(61, 87, 116, 0.2)'
           ],
           borderColor: [
-          'rgba(80,99,132,1)',
-          'rgba(80,99,132,1)',
-          'rgba(80,99,132,1)'
+          'rgba(61, 87, 116, 1)',
+          'rgba(61, 87, 116, 1)',
+          'rgba(61, 87, 116, 1)'
           ],
           borderWidth: 1
         }
@@ -270,20 +182,19 @@
 </head>
 
 <body onload="initChart();getDecision(0)">
-  <header class="padding-large">
-    <img src="/sc5logo.png" />
-    <h1>AI Decision Service Demo</h1>
-  </header class="padding-large">
-    <div id="description" class="padding-large">
+  <header class="padding-large padding-clear-bottom">
+    <img src="/img/nordcloud-logo-main-380x80.jpg" />
+  </header>
+    <div id="description">
       <p>
         This is a demo of <em>reinforcement learning</em> for news recommendation. Based on feedback, the AI will learn to suggest the most relevant item to each user. Occasionally, it suggests something new, in order to learn more.
       </p>
     </div>
-    <div id="context-container" class="padding-large">
+    <div id="context-container" class="padding-large padding-clear-bottom">
       <h2>User information</h2>
       <div class="context"></div>
     </div>
-    <div id="decision-container" class="padding-large">
+    <div id="decision-container" class="padding-large padding-clear-bottom">
       <h2 id="headline">Suggested headline</h2>
       <div class="decision"></div>
       <div id="feedback">
@@ -292,8 +203,8 @@
       </div>
     </div>
     <div id="chart-container" class="padding-large">
-      <canvas id="chart" width="100%" height="50%"></canvas>  
-    </div>   
-  <button id="reset" onclick="reset()">Reset</button> 
+      <canvas id="chart" width="100%" height="50%"></canvas>
+    </div>
+  <button id="reset" onclick="reset()">Reset</button>
 </body>
 </html>
