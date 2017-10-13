@@ -23,7 +23,7 @@ From the root directory of the repository:
     docker build -t bandit-demo .
     docker run -p 8000:8000 -v $(pwd)/static:/bandit/static bandit-demo
 
-The demo can be run by visiting `http://0.0.0.0:8000/index.html` in any browser. If you want to make changes to the demo, edit `static/index.html` and reload the browser tab.
+The demo can be run by visiting `http://0.0.0.0:8000` in any browser. If you want to make changes to the demo, edit `static/index.html` and reload the browser tab.
 
 ## Todo
 
