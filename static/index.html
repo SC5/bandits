@@ -36,24 +36,37 @@
     {
       id: 'Politics',
       topics: [
-        'Senate Budget Opens the Door to $1.5 Trillion in Tax Cuts'
+        'Senate Budget Opens the Door to $1.5 Trillion in Tax Cuts',
+        'Tillerson won\'t deny calling Trump \'a moron,\' but does deny being undercut',
+        'Gore stumps for Murphy as Guadagno speaks to gun group',
+        'Hillary Clinton blasts Trump over Iran, Korea policies',
+        'Japan exasperated by Trump\'s trade policies'
       ]
     },
     {
       id: 'Tech',
       topics: [
-        'Amazon quietly announces Fire OS 6, based on Android Nougat 7.1.2; the OS will premiere on the 4K Fire TV'
+        'Amazon quietly announces Fire OS 6, based on Android Nougat 7.1.2; the OS will premiere on the 4K Fire TV',
+        'Despite the backlash from politicians and the press, most Americans view big tech favorably',
+        'The difficulty of the three steps required to hack power grids explains why actual disruptions are so rare',
+        'IBM rolls out blockchain network for cross-border payments, currently supporting 12 "currency corridors" including Australia, New Zealand, UK, Pacific islands',
+        'Twitter CEO Jack Dorsey promises to crack down on hate, violence, and harassment with "more aggressive" rules',
+        'Amazon Is Finally Releasing A Waterproof Kindle'
       ]
     }
   ];
   var idx = 0;
   var chart = null;
 
+  function getContext(context) { // Remove name from feature list
+    return context.substring(context.indexOf(',') + 2);
+  }
+
   function getDecision(ix) {
     $.post(
       "/predict/default",
       JSON.stringify({
-        context: users[ix].context,
+        context: getContext(users[ix].context),
         arms: arms.map(function (item) {
           return item.id;
         })
@@ -93,7 +106,7 @@
 
   function sendReward(cost) {
     var arm = arms[parseInt($('.arm-index').text())].id;
-    var context = $('.context').text();
+    var context = getContext($('.context').text());
     console.log('reward', {arm, context, cost});
     $.post(
       "/reward/default",
