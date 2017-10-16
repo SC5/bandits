@@ -7,7 +7,7 @@ from sanic.response import json
 
 app = Sanic()
 bandits = {}
-bandits['default'] = bandit.epsilonGreedyContextualBandit(alpha=0.1, penalty='l1', epsilon=0.2)
+bandits['default'] = bandit.epsilonGreedyContextualBandit(alpha=0.5, penalty='l1', epsilon=0.2)
 
 app.static('', './static/index.html')
 app.static('/', './static')
