@@ -125,3 +125,7 @@ p {
 .impact {
   border: 2px solid #3D5774;
 }
+
+.arm-index {
+  display: none;
+}

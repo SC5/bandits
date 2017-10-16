@@ -25,14 +25,26 @@
   }
   ];
   var arms = [
-  {
-    id: 'Politics',
-    text: 'Senate Budget Opens the Door to $1.5 Trillion in Tax Cuts'
-  },
-  {
-    id: 'Tech',
-    text: 'Amazon quietly announces Fire OS 6, based on Android Nougat 7.1.2; the OS will premiere on the 4K Fire TV'
-  }
+    {
+      id: 'Politics'
+    },
+    {
+      id: 'Tech'
+    }
+  ];
+  var newsItems = [
+    {
+      id: 'Politics',
+      topics: [
+        'Senate Budget Opens the Door to $1.5 Trillion in Tax Cuts'
+      ]
+    },
+    {
+      id: 'Tech',
+      topics: [
+        'Amazon quietly announces Fire OS 6, based on Android Nougat 7.1.2; the OS will premiere on the 4K Fire TV'
+      ]
+    }
   ];
   var idx = 0;
   var chart = null;
@@ -56,7 +68,10 @@
         $('#headline').text('Suggested headline (exploit)')
       }
       $('.context').text(users[ix].context);
-      $('.decision').text(arms[arms.findIndex(function (i) {return i.id == data.arm})].text);
+      var topicIndex = arms.findIndex(function (i) {return i.id == data.arm});
+      var topicText = newsItems[topicIndex].topics[Math.floor(Math.random() * newsItems[topicIndex].topics.length)];
+      $('.decision').text(topicText);
+      $('.arm-index').text(topicIndex);
       users[ix].history[arms.findIndex(function (i) { return i.id == data.arm})] += 1;
       addData(chart);
       if(idx == users.length - 1) {
@@ -78,8 +93,7 @@
   }
 
   function sendReward(cost) {
-    var decisionText = $('.decision').text();
-    var arm = arms[arms.findIndex(function (i) {return i.text == decisionText})].id;
+    var arm = arms[parseInt($('.arm-index').text())].id;
     var context = $('.context').text();
     console.log('reward', {arm, context, cost});
     $.post(
@@ -185,6 +199,7 @@
   <header class="padding-large padding-clear-bottom">
     <img src="/img/nordcloud-logo-main-380x80.jpg" />
   </header>
+    <span class="arm-index"></span>
     <div id="description">
       <p>
         This is a demo of <em>reinforcement learning</em> for news recommendation. Based on feedback, the AI will learn to suggest the most relevant item to each user. Occasionally, it suggests something new, in order to learn more.
