@@ -8,14 +8,15 @@ from sklearn.feature_extraction.text import HashingVectorizer
 
 class epsilonGreedyContextualBandit(object):
 
-    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', alpha=0.01, n_features=32, mode='online', batch_size=128):
+    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', alpha=0.01, n_features=32, mode='online', batch_size=128, burn_in=1):
         self.config = {
             'epsilon': epsilon,
             'fit_intercept': fit_intercept,
             'penalty': penalty,
             'alpha': alpha,
             'mode': mode,
-            'batch_size': batch_size
+            'batch_size': batch_size,
+            'burn_in': burn_in
         }
         self.arms = {}
         self.n_arms = 0
@@ -23,11 +24,13 @@ class epsilonGreedyContextualBandit(object):
         self.vectorizer = HashingVectorizer(self.n_features)
         self.batch = []
         self.batch_counter = 0
+        self.epoch = 0
 
     def _ips_weight(self, reward, prob):
         return (-reward) / prob
 
     def select_arm(self, context, choices):
+        self.epoch += 1
         context = self.vectorizer.fit_transform([context])
         for arm in choices:
             if arm not in self.arms:
@@ -40,7 +43,7 @@ class epsilonGreedyContextualBandit(object):
                 )
                 self.n_arms += 1
 
-        if np.random.uniform() <= self.config['epsilon']:
+        if np.random.uniform() <= self.config['epsilon'] or self.epoch <= self.config['burn_in']:
             choice = np.random.choice(choices)
             prob = self.config['epsilon'] / len(choices)
             decision_id = base64.b64encode(json.dumps({
@@ -127,5 +130,6 @@ class epsilonGreedyContextualBandit(object):
             alpha=self.config['alpha'],
             n_features=self.n_features,
             mode=self.config['mode'],
-            batch_size=self.config['batch_size']
+            batch_size=self.config['batch_size'],
+            burn_in=self.config['burn_in']
         )
