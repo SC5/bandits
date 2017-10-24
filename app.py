@@ -4,7 +4,7 @@ import bandit
 
 # np.random.seed(2)
 
-contextual_bandit = bandit.epsilonGreedyContextualBandit(epsilon=0.1, penalty='l1')
+contextual_bandit = bandit.epsilonGreedyContextualBandit(epsilon=0.1, penalty='l1', mode='batch')
 
 # Example with advertisments we would like to show
 arms = ['advertisement_1',
@@ -25,25 +25,26 @@ ctrs = [0.993, 0.0521, 0.0122, 0.05215, 0.074, 0.0521, 0.07482, 0.0154]
 context = 'age_21 gender_male browser_firefox'
 
 counts = np.zeros(len(arms)) # Keep count of how many times each arm was chosen
-costs = np.zeros(len(arms)) # Keep count of the costs for each arm
+rewards = np.zeros(len(arms)) # Keep count of the rewards for each arm
 
-epochs = 10000
+epochs = 50000
 sys.stdout.write('Running simulation for ' + str(epochs) + ' epochs')
 for i in range(epochs):
     sys.stdout.write('.')
     sys.stdout.flush()
-    chosen_arm, phase, predictions = contextual_bandit.select_arm(context, arms)
-    # Send cost based on our pretend CTR for the chosen arm:
-    # - -1: clicked
-    # - 1: not clicked
+    chosen_arm, phase, predictions, decision_id = contextual_bandit.select_arm(context, arms) 
+    # Send reward based on our pretend CTR for the chosen arm:
+    # - 1: clicked
+    # - 0: not clicked
     if np.random.random() < ctrs[arms.index(chosen_arm)]:
-        contextual_bandit.reward(chosen_arm, context, 0)
-        costs[arms.index(chosen_arm)] += 0
+        contextual_bandit.reward(context, 1, decision_id)
+        rewards[arms.index(chosen_arm)] += 1
     else:
-        contextual_bandit.reward(chosen_arm, context, 1)
-        costs[arms.index(chosen_arm)] += 1
+        contextual_bandit.reward(context, 0, decision_id)
+        rewards[arms.index(chosen_arm)] += 0
     counts[arms.index(chosen_arm)] += 1
+
 
 print('done.\nResults:')
 for i, v in enumerate(counts):
-    print('Arm ' + arms[i] + ' was chosen ' + str(counts[i]) + ' times, with a cumulative cost of ' + str(costs[i]) + ' (cost per play: ' + str(costs[i] / counts[i]) + ')')
+    print('Arm ' + arms[i] + ' was chosen ' + str(counts[i]) + ' times, with a cumulative reward of ' + str(rewards[i]) + ' (avg. reward per play: ' + str(rewards[i] / counts[i]) + ')')
