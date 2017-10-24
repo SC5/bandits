@@ -6,10 +6,9 @@ from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import SGDRegressor
 from sklearn.feature_extraction.text import HashingVectorizer
 
-
 class epsilonGreedyContextualBandit(object):
 
-    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', alpha=0.01, n_features=32, mode='online', batch_size=32):
+    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', alpha=0.01, n_features=32, mode='online', batch_size=128):
         self.config = {
             'epsilon': epsilon,
             'fit_intercept': fit_intercept,
@@ -76,7 +75,6 @@ class epsilonGreedyContextualBandit(object):
                 }).encode())
                 return (np.random.choice(choices), 'explore', [], decision_id)
 
-
     def reward(self, context, reward, decision_id):
         if self.config['mode'] == 'online':
             decision_id = json.loads(base64.b64decode(decision_id))
@@ -96,8 +94,6 @@ class epsilonGreedyContextualBandit(object):
                 self.batch_reward(self.batch)
                 self.batch = []
                 self.batch_counter = 0
-
-
 
     def batch_reward(self, batch):
         arms_to_fit = {}
@@ -122,7 +118,6 @@ class epsilonGreedyContextualBandit(object):
         for arm in arms_to_fit:
             contexts = self.vectorizer.fit_transform(arms_to_fit[arm]['contexts'])
             self.arms[arm].partial_fit(contexts, arms_to_fit[arm]['rewards'])
-
 
     def reset(self):
         self.__init__(
