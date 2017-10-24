@@ -91,11 +91,11 @@ class epsilonGreedyContextualBandit(object):
             self.batch.append((context, reward, decision_id))
             self.batch_counter += 1
             if self.batch_counter == self.config['batch_size']:
-                self.batch_reward(self.batch)
+                self._batch_reward(self.batch)
                 self.batch = []
                 self.batch_counter = 0
 
-    def batch_reward(self, batch):
+    def _batch_reward(self, batch):
         arms_to_fit = {}
         for item in batch:
             context, reward, decision_id = item
