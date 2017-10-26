@@ -8,12 +8,12 @@ from sklearn.feature_extraction.text import HashingVectorizer
 
 class epsilonGreedyContextualBandit(object):
 
-    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', alpha=0.01, n_features=32, mode='online', batch_size=128, burn_in=1):
+    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', learning_rate=0.01, n_features=32, mode='online', batch_size=128, burn_in=1):
         self.config = {
             'epsilon': epsilon,
             'fit_intercept': fit_intercept,
             'penalty': penalty,
-            'alpha': alpha,
+            'learning_rate': learning_rate,
             'mode': mode,
             'batch_size': batch_size,
             'burn_in': burn_in
@@ -38,7 +38,8 @@ class epsilonGreedyContextualBandit(object):
                     fit_intercept=self.config['fit_intercept'],
                     penalty=self.config['penalty'],
                     max_iter=1,
-                    alpha=self.config['alpha'],
+                    eta0=self.config['learning_rate'],
+                    learning_rate='constant',
                     tol=None
                 )
                 self.n_arms += 1
@@ -127,7 +128,7 @@ class epsilonGreedyContextualBandit(object):
             epsilon=self.config['epsilon'],
             fit_intercept=self.config['fit_intercept'],
             penalty=self.config['penalty'],
-            alpha=self.config['alpha'],
+            learning_rate=self.config['learning_rate'],
             n_features=self.n_features,
             mode=self.config['mode'],
             batch_size=self.config['batch_size'],
