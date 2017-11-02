@@ -28,5 +28,5 @@ The demo can be run by visiting `http://0.0.0.0:8000` in any browser. If you wan
 ## Todo
 
 - Add support for shared features
+- Add support for model loading via queue
 - Add support for model training via queue
-- Add support for mini-batch training
