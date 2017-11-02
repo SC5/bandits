@@ -7,12 +7,13 @@ from sanic.response import json
 
 app = Sanic()
 bandits = {}
-bandits['default'] = bandit.epsilonGreedyContextualBandit(alpha=0.5, penalty='l1', epsilon=0.2)
+bandits['default'] = bandit.epsilonGreedyContextualBandit(learning_rate=0.2, penalty='l2', epsilon=0.2, mode='batch', batch_size=10, fit_intercept=True)
 
 app.static('', './static/index.html')
 app.static('/', './static')
 
 logger = logging.getLogger('sanic')
+logger.info(bandits['default'].config)
 
 # async def tick():
 #     logger.info('Tick! The time is: %s' % datetime.now())
@@ -31,17 +32,22 @@ async def predict(request, id):
     body = request.json
     context = body['context']
     arms = body['arms']
-    arm, phase, predictions= bandits[id].select_arm(context, arms)
-    return json({"arm": arm, "phase": phase, "predictions": predictions})
+    arm, phase, predictions, decision_id = bandits[id].select_arm(context, arms)
+    return json({
+        "arm": arm,
+        "phase": phase,
+        "predictions": predictions,
+        "decision_id": decision_id
+    })
 
 @app.route("/reward/<id>", methods=["POST"])
 async def reward(request, id):
     body = request.json
     context = body['context']
-    arm = body['arm']
-    cost = body['cost']
-    bandits[id].reward(arm, context, cost)
-    return json({"cost": cost})
+    decision_id = body['decision_id']
+    reward = body['reward']
+    bandits[id].reward(context, reward, decision_id)
+    return json({"reward": reward})
 
 @app.route("/reset/<id>", methods=["POST"])
 async def reset(request, id):
