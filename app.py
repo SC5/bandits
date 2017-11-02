@@ -2,9 +2,10 @@ import sys
 import numpy as np
 import bandit
 
-# np.random.seed(2)
+np.random.seed(12345)
 
-contextual_bandit = bandit.epsilonGreedyContextualBandit(epsilon=0.1, penalty='l1', mode='batch')
+contextual_bandit = bandit.epsilonGreedyContextualBandit(epsilon=0.1, penalty='None', mode='batch', batch_size=128, ips=True)
+print('Bandit configuration', contextual_bandit.config)
 
 # Example with advertisments we would like to show
 arms = ['advertisement_1',
