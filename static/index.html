@@ -96,6 +96,7 @@
       var topicText = newsItems[topicIndex].topics[Math.floor(Math.random() * newsItems[topicIndex].topics.length)];
       $('.decision').text(topicText);
       $('.arm-index').text(topicIndex);
+      $('.decision-id').text(data.decision_id);
       users[ix].history[arms.findIndex(function (i) { return i.id == data.arm})] += 1;
       addData(chart);
       if(idx == users.length - 1) {
@@ -115,16 +116,17 @@
     });
   }
 
-  function sendReward(cost) {
+  function sendReward(reward) {
     var arm = arms[parseInt($('.arm-index').text())].id;
     var context = getContext($('.context').text());
-    console.log('reward', {arm, context, cost});
+    var decision_id = $('.decision-id').text();
+    console.log('reward', {decision_id, arm, context, reward});
     $.post(
       "/reward/default",
       JSON.stringify({
         context: context,
-        arm: arm,
-        cost: cost
+        reward: reward,
+        decision_id: decision_id
       }))
     .done(function( data ) {
       getDecision(idx);
@@ -223,6 +225,7 @@
     <img src="/img/nordcloud-logo.jpg" />
   </header>
     <span class="arm-index"></span>
+    <span class="decision-id"></span>
     <div id="description">
       <p>
         This is a demo of <em>reinforcement learning</em> for news recommendation. Based on feedback, the AI will learn to suggest the most relevant item to each user. Occasionally, it suggests something new, in order to learn more.
@@ -236,8 +239,8 @@
       <h2 id="headline">Suggested headline</h2>
       <div class="decision"></div>
       <div id="feedback">
-        <button id="button-yes" onclick="sendReward(-1)">Interesting</button>
-        <button id="button-no" onclick="sendReward(1)">Not interesting</button>
+        <button id="button-yes" onclick="sendReward(1)">Interesting</button>
+        <button id="button-no" onclick="sendReward(0)">Not interesting</button>
       </div>
     </div>
     <div id="chart-container" class="padding-large">
