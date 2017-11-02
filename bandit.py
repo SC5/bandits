@@ -8,7 +8,18 @@ from sklearn.feature_extraction.text import HashingVectorizer
 
 class epsilonGreedyContextualBandit(object):
 
-    def __init__(self, epsilon=0.1, fit_intercept=True, penalty='l2', learning_rate=0.01, n_features=32, mode='online', batch_size=128, burn_in=1):
+    def __init__(
+            self,
+            epsilon=0.1, 
+            fit_intercept=True, 
+            penalty='l2', 
+            ips=True, 
+            learning_rate=0.01, 
+            n_features=32, 
+            mode='online', 
+            batch_size=128, 
+            burn_in=1
+        ):
         self.config = {
             'epsilon': epsilon,
             'fit_intercept': fit_intercept,
@@ -16,7 +27,8 @@ class epsilonGreedyContextualBandit(object):
             'learning_rate': learning_rate,
             'mode': mode,
             'batch_size': batch_size,
-            'burn_in': burn_in
+            'burn_in': burn_in,
+            'ips': ips
         }
         self.arms = {}
         self.n_arms = 0
@@ -25,6 +37,12 @@ class epsilonGreedyContextualBandit(object):
         self.batch = []
         self.batch_counter = 0
         self.epoch = 0
+
+    def _weight(self, reward, prob, ips):
+        if ips:
+            return self._ips_weight(reward, prob)
+        else:
+            return -reward
 
     def _ips_weight(self, reward, prob):
         return (-reward) / prob
@@ -84,13 +102,17 @@ class epsilonGreedyContextualBandit(object):
             decision_id = json.loads(base64.b64decode(decision_id))
             arm_played = decision_id['choice']
             arms = decision_id['choices']
-            weighted_cost = self._ips_weight(reward, decision_id['prob'])
+            weighted_cost = self._weight(reward, decision_id['prob'], self.config['ips'])
             context = self.vectorizer.fit_transform([context])
-            for arm in arms:
-                if arm != arm_played:
-                    self.arms[arm].partial_fit(context, [0])
-                else:
-                    self.arms[arm].partial_fit(context, [weighted_cost])
+            if self.config['ips']:
+                print('foo')
+                for arm in arms:
+                    if arm != arm_played:
+                        self.arms[arm].partial_fit(context, [0])
+                    else:
+                        self.arms[arm].partial_fit(context, [weighted_cost])
+            else:
+                self.arms[arm_played].partial_fit(context, [weighted_cost])
         else:
             self.batch.append((context, reward, decision_id))
             self.batch_counter += 1
@@ -106,19 +128,30 @@ class epsilonGreedyContextualBandit(object):
             decision_id = json.loads(base64.b64decode(decision_id))
             arm_played = decision_id['choice']
             arms = decision_id['choices']
-            weighted_cost = self._ips_weight(reward, decision_id['prob'])
-            for arm in arms:
-                if arm not in arms_to_fit:
-                    arms_to_fit[arm] = {
+            weighted_cost = self._weight(reward, decision_id['prob'], self.config['ips'])
+            if self.config['ips']:
+                for arm in arms:
+                    if arm not in arms_to_fit:
+                        arms_to_fit[arm] = {
+                            'contexts': [context],
+                            'rewards': []
+                        }
+                    else:
+                        arms_to_fit[arm]['contexts'].append(context)
+                    if arm != arm_played:
+                        arms_to_fit[arm]['rewards'].append(0)
+                    else:
+                        arms_to_fit[arm]['rewards'].append(weighted_cost)
+            else:
+                if arm_played not in arms_to_fit:
+                    arms_to_fit[arm_played] = {
                         'contexts': [context],
                         'rewards': []
                     }
                 else:
-                    arms_to_fit[arm]['contexts'].append(context)
-                if arm != arm_played:
-                    arms_to_fit[arm]['rewards'].append(0)
-                else:
-                    arms_to_fit[arm]['rewards'].append(weighted_cost)
+                    arms_to_fit[arm_played]['contexts'].append(context)
+                arms_to_fit[arm_played]['rewards'].append(weighted_cost)
+
         for arm in arms_to_fit:
             contexts = self.vectorizer.fit_transform(arms_to_fit[arm]['contexts'])
             self.arms[arm].partial_fit(contexts, arms_to_fit[arm]['rewards'])
@@ -132,5 +165,6 @@ class epsilonGreedyContextualBandit(object):
             n_features=self.n_features,
             mode=self.config['mode'],
             batch_size=self.config['batch_size'],
-            burn_in=self.config['burn_in']
+            burn_in=self.config['burn_in'],
+            ips=self.config['ips']
         )
