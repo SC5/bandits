@@ -95,7 +95,7 @@ class epsilonGreedyContextualBandit(object):
                     'choice': choice,
                     'prob': prob
                 }).encode())
-                return (np.random.choice(choices), 'explore', [], decision_id)
+                return (choice, 'explore', [], decision_id)
 
     def reward(self, context, reward, decision_id):
         if self.config['mode'] == 'online':
