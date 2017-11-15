@@ -27,6 +27,7 @@ The demo can be run by visiting `http://0.0.0.0:8000` in any browser. If you wan
 
 ## Todo
 
+- Remove base64 encoding to server logic
 - Add single-model CSOAA support
 - Add support for shared features
 - Add support for model loading via queue

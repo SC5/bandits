@@ -6,20 +6,21 @@ from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import SGDRegressor
 from sklearn.feature_extraction.text import HashingVectorizer
 
+
 class epsilonGreedyContextualBandit(object):
 
     def __init__(
             self,
-            epsilon=0.1, 
-            fit_intercept=True, 
-            penalty='l2', 
-            ips=True, 
-            learning_rate=0.01, 
-            n_features=32, 
-            mode='online', 
-            batch_size=128, 
-            burn_in=1
-        ):
+            epsilon=0.1,
+            fit_intercept=True,
+            penalty='l2',
+            ips=True,
+            learning_rate=0.01,
+            n_features=1024,
+            mode='online',
+            batch_size=128,
+            burn_in=1000
+            ):
         self.config = {
             'epsilon': epsilon,
             'fit_intercept': fit_intercept,
@@ -27,8 +28,8 @@ class epsilonGreedyContextualBandit(object):
             'learning_rate': learning_rate,
             'mode': mode,
             'batch_size': batch_size,
-            'burn_in': burn_in,
-            'ips': ips
+            'ips': ips,
+            'burn_in': burn_in
         }
         self.arms = {}
         self.n_arms = 0
@@ -37,9 +38,33 @@ class epsilonGreedyContextualBandit(object):
         self.batch = []
         self.batch_counter = 0
         self.epoch = 0
+        self.model = SGDRegressor(
+            fit_intercept=self.config['fit_intercept'],
+            penalty=self.config['penalty'],
+            max_iter=1,
+            eta0=self.config['learning_rate'],
+            learning_rate='constant',
+            tol=None
+        )
 
-    def _weight(self, reward, prob, ips):
-        if ips:
+    def _explode_features(self, context, choice, return_array=True):
+        prefixed_words = [choice + '_' + w for w in context.split(' ')]
+        context = ' '.join(prefixed_words)
+        if return_array:
+            return [context]
+        else:
+            return context
+
+    def _explode_features_batch(self, context, choices):
+        exploded_contexts = []
+        for c in choices:
+            prefixed_words = [c + '_' + w for w in context.split(' ')]
+            exploded_features = ' '.join(prefixed_words)
+            exploded_contexts.append(exploded_features)
+        return exploded_contexts
+
+    def _weight(self, reward, prob):
+        if self.config['ips']:
             return self._ips_weight(reward, prob)
         else:
             return -reward
@@ -47,74 +72,65 @@ class epsilonGreedyContextualBandit(object):
     def _ips_weight(self, reward, prob):
         return (-reward) / prob
 
+    def _prob_dist(self, n, opt_idx, randomise=False):
+        epsilon = self.config['epsilon']
+        dist = np.full(n, epsilon / n)
+        if randomise:
+            opt_idx = numpy.random.randint(0, n)
+        dist[opt_idx] = (1 - epsilon) + (epsilon / n)
+        return dist
+
+    def _get_prob(self, n, choice, opt_choice):
+        epsilon = self.config['epsilon']
+        if choice == opt_choice:
+            return (1 - epsilon) + (epsilon / n)
+        else:
+            return epsilon / n
+
     def select_arm(self, context, choices):
         self.epoch += 1
-        context = self.vectorizer.fit_transform([context])
-        for arm in choices:
-            if arm not in self.arms:
-                self.arms[arm] = SGDRegressor(
-                    fit_intercept=self.config['fit_intercept'],
-                    penalty=self.config['penalty'],
-                    max_iter=1,
-                    eta0=self.config['learning_rate'],
-                    learning_rate='constant',
-                    tol=None
-                )
-                self.n_arms += 1
+        contexts = self._explode_features_batch(context, choices)
+        contexts = self.vectorizer.fit_transform(contexts)
 
-        if np.random.uniform() <= self.config['epsilon'] or self.epoch <= self.config['burn_in']:
-            choice = np.random.choice(choices)
-            prob = self.config['epsilon'] / len(choices)
-            decision_id = base64.b64encode(json.dumps({
-                'choices': choices,
-                'choice': choice,
-                'prob': prob
-            }).encode())
-            return (choice, 'explore', [], decision_id)
-        else:
-            try:
-                predictions = []
-                candidates = []
-                arms = self.arms.keys()
-                for arm in arms:
-                    predictions.append(self.arms[arm].predict(context))
-                    candidates.append(arm)
-                choice = candidates[np.argmin(predictions)]
-                prob = (1 - self.config['epsilon']) + (self.config['epsilon'] / len(choices))
-                decision_id = base64.b64encode(json.dumps({
-                    'choices': choices,
-                    'choice': choice,
-                    'prob': prob
-                }).encode())
-                return (choice, 'exploit', predictions, decision_id)
-            except NotFittedError:
-                choice = np.random.choice(choices)
-                prob = self.config['epsilon'] / len(choices)
-                decision_id = base64.b64encode(json.dumps({
-                    'choices': choices,
-                    'choice': choice,
-                    'prob': prob
-                }).encode())
-                return (choice, 'explore', [], decision_id)
+        try:
+            predictions = self.model.predict(contexts)
+            opt_idx = np.argmin(predictions)
+        except NotFittedError:
+            predictions = []
+            opt_idx = 0
 
-    def reward(self, context, reward, decision_id):
+        choice = np.random.choice(choices, p=self._prob_dist(len(choices), opt_idx))
+
+        decision = base64.b64encode(json.dumps({
+            'choices': choices,
+            'choice': choice,
+            'prob': self._get_prob(len(choices), choice, choices[opt_idx])
+        }).encode())
+
+        return (choice, predictions, decision)
+
+    def reward(self, context, reward, decision):
+        decision = json.loads(base64.b64decode(decision))
+        choice = decision['choice']
+        choices = decision['choices']
+        choices.remove(choice)
+        cost = self._weight(reward, decision['prob'])
+
         if self.config['mode'] == 'online':
-            decision_id = json.loads(base64.b64decode(decision_id))
-            arm_played = decision_id['choice']
-            arms = decision_id['choices']
-            weighted_cost = self._weight(reward, decision_id['prob'], self.config['ips'])
-            context = self.vectorizer.fit_transform([context])
+            exploded_context = self._explode_features(context, choice)
+            self.model.partial_fit(self.vectorizer.fit_transform(exploded_context), [cost])
             if self.config['ips']:
-                print('foo')
-                for arm in arms:
-                    if arm != arm_played:
-                        self.arms[arm].partial_fit(context, [0])
-                    else:
-                        self.arms[arm].partial_fit(context, [weighted_cost])
-            else:
-                self.arms[arm_played].partial_fit(context, [weighted_cost])
+                exploded_contexts = self._explode_features_batch(context, choices)
+                self.model.partial_fit(self.vectorizer.fit_transform(exploded_contexts), np.full(len(choices), 0))
+
         else:
-            self.batch.append((context, reward, decision_id))
+            exploded_context = self._explode_features(context, choice, return_array=False)
+            self.batch.append((exploded_context, cost))
+            if self.config['ips']:
+                exploded_contexts = self._explode_features_batch(context, choices)
+                for item in exploded_contexts:
+                    self.batch.append((item, 0))
+
             self.batch_counter += 1
             if self.batch_counter == self.config['batch_size']:
                 self._batch_reward(self.batch)
@@ -122,39 +138,8 @@ class epsilonGreedyContextualBandit(object):
                 self.batch_counter = 0
 
     def _batch_reward(self, batch):
-        arms_to_fit = {}
-        for item in batch:
-            context, reward, decision_id = item
-            decision_id = json.loads(base64.b64decode(decision_id))
-            arm_played = decision_id['choice']
-            arms = decision_id['choices']
-            weighted_cost = self._weight(reward, decision_id['prob'], self.config['ips'])
-            if self.config['ips']:
-                for arm in arms:
-                    if arm not in arms_to_fit:
-                        arms_to_fit[arm] = {
-                            'contexts': [context],
-                            'rewards': []
-                        }
-                    else:
-                        arms_to_fit[arm]['contexts'].append(context)
-                    if arm != arm_played:
-                        arms_to_fit[arm]['rewards'].append(0)
-                    else:
-                        arms_to_fit[arm]['rewards'].append(weighted_cost)
-            else:
-                if arm_played not in arms_to_fit:
-                    arms_to_fit[arm_played] = {
-                        'contexts': [context],
-                        'rewards': []
-                    }
-                else:
-                    arms_to_fit[arm_played]['contexts'].append(context)
-                arms_to_fit[arm_played]['rewards'].append(weighted_cost)
-
-        for arm in arms_to_fit:
-            contexts = self.vectorizer.fit_transform(arms_to_fit[arm]['contexts'])
-            self.arms[arm].partial_fit(contexts, arms_to_fit[arm]['rewards'])
+        contexts, costs = map(list, zip(*batch))
+        self.model.partial_fit(self.vectorizer.fit_transform(contexts), costs)
 
     def reset(self):
         self.__init__(
@@ -165,6 +150,6 @@ class epsilonGreedyContextualBandit(object):
             n_features=self.n_features,
             mode=self.config['mode'],
             batch_size=self.config['batch_size'],
-            burn_in=self.config['burn_in'],
-            ips=self.config['ips']
+            ips=self.config['ips'],
+            burn_in=self.config['burn_in']
         )
