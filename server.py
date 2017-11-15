@@ -15,11 +15,9 @@ app.static('/', './static')
 logger = logging.getLogger('sanic')
 logger.info(bandits['default'].config)
 
-
 # async def tick():
 #     logger.info('Tick! The time is: %s' % datetime.now())
 #     time.sleep(1)
-
 
 # @app.listener('before_server_start')
 # async def instantiate_scheduler(app, loop):
@@ -27,13 +25,11 @@ logger.info(bandits['default'].config)
 #     scheduler.add_job(tick, 'interval', seconds=1)
 #     scheduler.start()
 
-
 @app.route("/health")
 async def ping():
     return json({
         "status": "ok"
     })
-
 
 @app.route("/predict/<id>", methods=["POST"])
 async def predict(request, id):
@@ -49,7 +45,6 @@ async def predict(request, id):
         "decision_id": decision_id
     })
 
-
 @app.route("/reward/<id>", methods=["POST"])
 async def reward(request, id):
     body = request.json
@@ -59,12 +54,10 @@ async def reward(request, id):
     bandits[id].reward(context, reward, decision_id)
     return json({"reward": reward})
 
-
 @app.route("/reset/<id>", methods=["POST"])
 async def reset(request, id):
     bandits[id].reset()
     return json({"reset": "ok"})
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
