@@ -6,7 +6,6 @@ from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import SGDRegressor
 from sklearn.feature_extraction.text import HashingVectorizer
 
-
 class epsilonGreedyContextualBandit(object):
 
     def __init__(
