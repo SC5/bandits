@@ -26,7 +26,7 @@ logger.info(bandits['default'].config)
 #     scheduler.start()
 
 @app.route("/health")
-async def ping():
+async def ping(request):
     return json({
         "status": "ok"
     })
